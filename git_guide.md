@@ -2,7 +2,7 @@
 
 *Guide created by Hannah Holland-Moritz*
 
-*Updated: May 9, 2019*
+*Updated: Oct 22, 2019*
 
 ## Basic git workflow
 
@@ -68,6 +68,48 @@ git remote add origin https://github.com/username/new_repo # connect your repo t
 
 git push -u origin master # set the remote as upstream to your local directory (i.e. source of information and reference directory that changes will be pushed to.)
 
+```
+### Linking an already-created local repository to an already-created remote###
+
+First make sure the local director is initialized in git.
+
+```bash
+git init
+
+# If there are files in the directory add and commit them
+git status # see the files that need to be commited
+
+git add . # add all of them
+
+git commit -m "setting up repository"
+
+```
+If you have any existing local files that might have conflicts (i.e. differences) with the remote (for example .gitignore or README.md), it may be easier to rename them temporarily and reconcile differences later. 
+
+Add the remote repository
+```bash
+git remote add origin https://github.com/username/new_repo.git # connect your repo to the one on github. 
+
+# *** If you have an ssh-key set up, you can avoid typing your user name by using the ssh version ****
+git remote add origin ssh://git@github.com/username/new_repo.git
+```
+
+Now first **pull** any differences before you **push** to the remote.
+
+```bash
+# A pull is a fetch + a merge, we will do this separately do deal with existing files
+
+git fetch origin master # grab remote changes
+
+git merge origin master --allow-unrelated-histories
+
+# Now commit changes, if need be
+
+git commit -m "merging remote"
+
+# push changes to remote and set remote as upstream
+
+git push -u origin master # set the remote as upstream to your local directory (i.e. source of information and reference directory that changes will be pushed to.)
 ```
 
 ## Branches
@@ -173,7 +215,7 @@ git fetch upstream # stage the changes from upstream
 git pull upstream master # make them permanant; pull from upstream/master
 ```
 #### Testing someone's pull request
-
+git@github.com:hhollandmoritz/NovaSeqTestdada2.git
 ```bash
 # fetch the reference of the pull request based on the # ID and create a new branch in the process
 git fetch origin pull/ID/head:BRANCHNAME
@@ -226,6 +268,83 @@ git diff myfile.txt
 
 # After you've used "git add"
 git diff --cached myfile.txt
+
+```
+
+#### Setting up ssh key so that remote repositories don't prompt for a username ####
+
+1. Check for existing keys (https://help.github.com/en/articles/checking-for-existing-ssh-keys)[https://help.github.com/en/articles/checking-for-existing-ssh-keys]
+
+```bash
+
+ls -al ~/.ssh
+# shows the files in your .ssh directory if they exist
+
+```
+If you have a key it is likely to be in a file named something like this:
+
+```bash
+id_dsa.pub
+id_ecdsa.pub
+id_ed25519.pub
+id_rsa.pub
+```
+If you don't have these files, you need to generate a new key (go to step 2), otherwise you'll need skip to adding your key to the ssh-agent, if it hasn't already been done (step 3) \[doing this step twice with the same password won't hurt] and then add that key to github (step 4).
+
+2. To generate an ssh key type this into your terminal:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+# -b stands for number of bits
+# -t is the type of key
+# -C is a comment or label
+```
+Then give it a place to save the key.
+
+```bash
+> Enter a file in which to save the key (/home/you/.ssh/id_rsa): [Press enter]
+
+## WARNING: do not press enter if you already have a key named "id_rsa" and you are trying to write a new one. Instead, replace "id_rsa" with your own new name. 
+
+```
+
+Follow the instructions on screen and then type in your passphrase when prompted. 
+
+3. Adding your new key to the ssh-agent:
+
+__OR__ if you have generated a new key and called it something other than *id_rsa*, replace id_rsa with that name in the code below.
+
+```bash
+# start the ssh-agent running in the background
+eval "$(ssh-agent -s)"
+
+# add your key
+ssh-add ~/.ssh/id_rsa
+
+# Now follow instructions to enter passphrase
+ 
+```
+
+4. Copy the contents of your public key (id_rsa.pub, in our example) to the clipboard. You can do this by concatentating it to the screen and then copying it.
+
+```bash
+cat ~/.ssh/id_rsa.pub
+
+#[copy results to clipboard]
+```
+
+On your github page, under your avatar dropdown menu go to Settings > SSH and GPG keys > New SSH key or Add SSH key
+
+Copy and paste the key into the space provided, and name it something helpful to remember. 
+
+
+Now when you are [setting up a repository](#setting-up-a-repository) you can use the ssh rather than the https key.
+
+To change an already existing repository from a https key to a ssh key do the following:
+```bash
+git remote show origin # see your current remote repository url
+
+git remote set-url origin git@github.com/username/reponame.git
 
 ```
 
